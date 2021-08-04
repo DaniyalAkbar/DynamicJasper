@@ -7,9 +7,11 @@ import ar.com.fdvs.dj.domain.builders.FastReportBuilder;
 import ar.com.fdvs.dj.domain.constants.Page;
 import com.dynamic.jasper.DynamicJasper.model.Employee;
 import com.dynamic.jasper.DynamicJasper.repository.EmployeeRepository;
+import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.export.*;
 import net.sf.jasperreports.view.JasperViewer;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -44,16 +47,17 @@ public class EmployeeService {
 
         int numberOfRows = allEmployeeList.size();
         int numberOfColumns = Employee.class.getDeclaredFields().length;    // GETS THE NUMBER OF FIELDS DECLARED IN EMPLOYEE MODEL CLASS
-        FastReportBuilder reportBuilder = new FastReportBuilder();
+        FastReportBuilder fastReportBuilder = new FastReportBuilder();
         Page page = Page.Page_A4_Portrait();
-        reportBuilder.setTitle("Table Name")
+        fastReportBuilder.setTitle("Employee Records")
+                .setSubtitle("This report was generated at " + new Date())
                 .setPageSizeAndOrientation(page)
                 .setUseFullPageWidth(true)
-                .setReportName("Report Name");
+                .setPrintBackgroundOnOddRows(true);
 
 
         for (int column = 1; column <= numberOfColumns; column++) {
-            reportBuilder.addColumn("Column " + column, "key" + column,
+            fastReportBuilder.addColumn("Column " + column, "key" + column,
                     String.class.getName(),
                     30);
         }
@@ -63,6 +67,7 @@ public class EmployeeService {
 //
 //        for (int row = 1; row <= numberOfRows; row++) {
 //            HashMap<String, String> rowHashMap = new HashMap<>();
+//            HashMap<Integer, Objec> rowHashMap = new HashMap<>();
 //            for (int column = 1; column <= numberOfColumns; column++) {
 //                rowHashMap.put("key" + column,
 //                " Row " + row + " Column " + column);
@@ -71,7 +76,7 @@ public class EmployeeService {
 //        }
 
 
-        DynamicReport dynamicReport = reportBuilder.build();
+        DynamicReport dynamicReport = fastReportBuilder.build();
         JasperPrint finalReport = DynamicJasperHelper.generateJasperPrint(dynamicReport,
                 new ClassicLayoutManager(),
                 rowsDataList);
@@ -83,6 +88,43 @@ public class EmployeeService {
 //        this.PDFreportRetrun(finalReport);
         return "PDF Generated Successfully!";
     }
+
+
+    public String dynamicReportBuilder() throws ClassNotFoundException, JRException {
+        //  FETCHING ALL RECORDS OF EMPOLYEE FROM DB
+        List<Employee> allEmployeeList = this.getAllData();
+
+        int numberOfRows = allEmployeeList.size();
+        int numberOfColumns = Employee.class.getDeclaredFields().length;    // GETS THE NUMBER OF FIELDS DECLARED IN EMPLOYEE MODEL CLASS
+
+        FastReportBuilder drb = new FastReportBuilder();
+        DynamicReport dr = drb.addColumn("ID", "eid", Long.class.getName(),10)
+                .addColumn("Designation", "designation", String.class.getName(),30)
+                .addColumn("DOJ", "doj", String.class.getName(),50)
+                .addColumn("Name", "name", String.class.getName(),50)
+                .addColumn("Salary", "salary", Long.class.getName(),50,true)
+                .addGroups(2)
+                .setTitle("August 2021, Employee Detail Report")
+                .setSubtitle("This report was generated at " + new Date())
+                .setPrintBackgroundOnOddRows(true)
+                .setUseFullPageWidth(true)
+                .build();
+
+        JRDataSource ds = new JRBeanCollectionDataSource( allEmployeeList );
+        JasperPrint jp = DynamicJasperHelper.generateJasperPrint(dr, new ClassicLayoutManager(), ds);
+        JasperViewer.viewReport(jp);    //finally display the report report
+
+        return "Report Geenrated";
+    }
+
+
+
+
+
+
+
+
+
 
 
     private List createListOfHash(int numberOfRows, int numberOfColumns, List<Employee> allEmployeeList){

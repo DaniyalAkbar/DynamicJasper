@@ -31,4 +31,9 @@ public class EmployeeController {
         return this.employeeService.fastReportbuilder();
     }
 
+    @PostMapping(value = "/pdf2", produces = MediaType.APPLICATION_PDF_VALUE)
+    private String printReport2() throws JRException, ClassNotFoundException {
+        return this.employeeService.dynamicReportBuilder();
+    }
+
 }
