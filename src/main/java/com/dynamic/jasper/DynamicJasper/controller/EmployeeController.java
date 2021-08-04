@@ -27,8 +27,8 @@ public class EmployeeController {
     }
 
     @PostMapping(value = "/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
-    private String printReport(@RequestParam int r, @RequestParam int c) throws JRException, ClassNotFoundException {
-        return this.employeeService.fastReportbuilder(r,c);
+    private String printReport() throws JRException, ClassNotFoundException {
+        return this.employeeService.fastReportbuilder();
     }
 
 }

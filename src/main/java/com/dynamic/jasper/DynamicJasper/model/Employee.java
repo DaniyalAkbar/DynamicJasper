@@ -55,6 +55,10 @@ public class Employee {
         this.designation = designation;
     }
 
+    public String getPropConcat(){
+        return getEid().toString() + "@" + getName() + "@" + getDesignation() + "@" + getDoj() + "@" + getSalary().toString();
+    }
+
 
 
     public Employee(){}

@@ -37,32 +37,38 @@ public class EmployeeService {
     }
 
 
-    public String fastReportbuilder(int rowCount, int columnCount) throws ClassNotFoundException, JRException {
-        int numberOfRows = rowCount;
-        int numberOfColumns = columnCount;
+    public String fastReportbuilder() throws ClassNotFoundException, JRException {
+
+        //  FETCHING ALL RECORDS OF EMPOLYEE FROM DB
+        List<Employee> allEmployeeList = this.getAllData();
+
+        int numberOfRows = allEmployeeList.size();
+        int numberOfColumns = Employee.class.getDeclaredFields().length;    // GETS THE NUMBER OF FIELDS DECLARED IN EMPLOYEE MODEL CLASS
         FastReportBuilder reportBuilder = new FastReportBuilder();
-        Page page = Page.Page_A4_Landscape();
+        Page page = Page.Page_A4_Portrait();
         reportBuilder.setTitle("Table Name")
                 .setPageSizeAndOrientation(page)
                 .setUseFullPageWidth(true)
                 .setReportName("Report Name");
 
-        for (int column = 1; column <= 4; column++) {
+
+        for (int column = 1; column <= numberOfColumns; column++) {
             reportBuilder.addColumn("Column " + column, "key" + column,
                     String.class.getName(),
                     30);
         }
 
-        List rowsDataList = new ArrayList();
-
-        for (int row = 1; row <= numberOfRows; row++) {
-            HashMap<String, String> rowHashMap = new HashMap<>();
-            for (int column = 1; column <= numberOfColumns; column++) {
-                rowHashMap.put("key" + column,
-                " Row " + row + " Column " + column);
-            }
-            rowsDataList.add(rowHashMap);
-        }
+        List rowsDataList = this.createListOfHash(numberOfRows, numberOfColumns, allEmployeeList);
+//        List rowsDataList = new ArrayList();
+//
+//        for (int row = 1; row <= numberOfRows; row++) {
+//            HashMap<String, String> rowHashMap = new HashMap<>();
+//            for (int column = 1; column <= numberOfColumns; column++) {
+//                rowHashMap.put("key" + column,
+//                " Row " + row + " Column " + column);
+//            }
+//            rowsDataList.add(rowHashMap);
+//        }
 
 
         DynamicReport dynamicReport = reportBuilder.build();
@@ -77,6 +83,24 @@ public class EmployeeService {
 //        this.PDFreportRetrun(finalReport);
         return "PDF Generated Successfully!";
     }
+
+
+    private List createListOfHash(int numberOfRows, int numberOfColumns, List<Employee> allEmployeeList){
+
+        List rowsDataList = new ArrayList();
+
+        for (int row = 0; row < numberOfRows; row++) {
+            HashMap<String, String> rowHashMap = new HashMap<>();
+            String[] fields = allEmployeeList.get(row).getPropConcat().split("@",5);
+            for (int column = 1; column <= numberOfColumns; column++) {
+                rowHashMap.put("key" + column,
+                        fields[column-1]);
+            }
+            rowsDataList.add(rowHashMap);
+        }
+        return rowsDataList;
+    }
+
 
     // TO EXPORT FILE INTO PDF FORMAT
     private void PDFreportRetrun(JasperPrint finalReport) throws JRException {
